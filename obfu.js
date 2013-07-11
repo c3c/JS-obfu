@@ -1,4 +1,4 @@
-      	// what will we construct the charset from
+  		// what will we construct the charset from
 		var ops = {
 			"true": "!![]",
 			"false": "![]",
@@ -8,19 +8,20 @@
 		}
 
 		var classes = {
-			"/String/": '([]+[])["constructor"]',
-			"/Boolean/": 'false["constructor"]',
-			"/Function/": '[]["filter"]["constructor"]',
-			"/Array/": '[]["constructor"]',
-			"/Number/": '(0)["constructor"]',
-			"/atob([0-9a-z])/i": '[]["filter"]["constructor"](return atob())'
+			"String": '([]+[])["constructor"]',
+			"Boolean": 'false["constructor"]',
+			"Function": '[]["filter"]["constructor"]',
+			"Array": '[]["constructor"]',
+			"Number": '(0)["constructor"]',
+			"atob": '[]["filter"]["constructor"]("return atob")()',
+			"btoa": '[]["filter"]["constructor"]("return btoa")()'
 			/*"Date": "window[Date]",
 			"Object": "(window[constructor])[constructor]",
 			"window": "[][filter][constructor](return this)()"*/
 		}
 
 		var baseset = {
-			" ": '(NaN+[]["filter"])[11]',
+			" ": '(NaN+["filter"])[11]',
 			"a": 'false[1]',
 			"b": 'Number[12]', // 3+9
 			"c": '([]["filter"]+[])[3]',
@@ -28,7 +29,7 @@
 			"e": 'true[3]',
 			"f": 'false[0]',
 			"g": 'String[14]', // 5+9
-			"h": '',
+			"h": 'atob("aI")',
 			"i": '(false+undefined)[10]',
 			"j": '',
 			"k": '',
@@ -47,15 +48,38 @@
 			"x": '',
 			"y": '(NaN+Infinity)[10]',
 			"z": '',
+			"I": 'Infinity[0]',
 			"N": "Number[9]"
 		}
 
-		for (var cl in classes) {
-			var trans = classes[cl];
-			trans = trans.replace(/"[a-z]+"/gi, function (m) { var o = []; for (var i = 1; i < m.length-1; i++) { o.push(m[i]); } return o.join('+'); });
-			classes[cl] = trans;
+		// We're going to build the charset dynamically by resolving everything against everything (..?)
+		// We'll just see if that works
+
+		var resolve = {};
+		for (var c in ops) resolve[c] = ops[c];
+		for (var c in classes) resolve[c] = classes[c];
+		for (var c in baseset) resolve[c] = baseset[c];
+
+		var toresolve = [];
+		for (var r in resolve)
+			toresolve.push(r);
+
+		for (var r in resolve) {
+			resolve[r] = resolver((r.length > 1) ? "("+r+"+[])" : r);
 		}
 
+		function resolver(str) {
+			str = str.replace(/"[a-z ]+"/gi, makeString);
+			str = str.replace(/[0-9]+/, makeNumber);
+			str = str.replace(/["a-z\ ]+/gi, function(m) { return resolver(resolve[m]); });
+			return str;
+		}
+
+		console.log(":"+resolve[" "]+":")
+		console.log(resolve["h"]);
+		console.log(eval(resolve["h"]));
+
+/*
 		var translations = {};
 		for (var char in baseset){
 			var trans = baseset[char];
@@ -72,15 +96,18 @@
 		for (var char in baseset){
 			var trans = translations[char];
 			
-			while (/[a-z]/.test(trans)) {
-				trans = trans.replace(/[a-z]/g, function(m) { return translations[m]; });
+			while (/[a-z]/i.test(trans)) {
+				trans = trans.replace(/[a-z]/gi, function(m) { return translations[m]; });
+				translations[char] = trans;
 			}
 			
 			try {
 
 			console.log(char + " -> " + trans + " -> " + eval(trans));
-			} catch(dd) {}
-		}
+			} catch(dd) {
+				console.log(char + " -> "+ trans)
+			}
+		}*/
 
 		function makeNumber(num) {
 			// if bigger than ...
@@ -94,6 +121,15 @@
 				output += ")"
 			}
 			return "+([]"+output+")";
+		}
+
+
+		function makeString(m) {
+			var o = []; 
+			for (var i = 1; i < m.length-1; i++) { 
+				o.push(m[i]); 
+			} 
+			return "(" + o.join('+') + "+[])";
 		}
 
 
@@ -117,4 +153,3 @@
 			"u": "([][[]]+[])[+[]]",
 			"y": "(+[![]]+[+(+!+[]+(!+[]+[])[!+[]+!+[]+!+[]]+[+!+[]]+[+[]]+[+[]]+[+[]])])[+!+[]+[+[]]]",
 		}
-
