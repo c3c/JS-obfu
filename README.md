@@ -22,6 +22,11 @@ eval(evil);
 **Note:** This obfuscator doesn't strive to use as least characters as possible.
 It strived mostly to be the least programming work. This means it really is explosive.
 
+**Q:** This isn't possible!    
+**A:** Yet it is! We can generate a base character set using only these few characters,
+by making them output the values (false,true,undefined,NaN,Infinity).
+These are enough to create a full charset.
+
 **Q:** Can I obfuscate whole documents with this?    
 **A:** Theoretically you can, but practically you'll probably run out of RAM
 
