@@ -19,7 +19,7 @@ eval(evil);
 
 ---
 
-**Note:** This obfuscator doesn't strive to use as least characters as possible.
+**Note:** This obfuscator doesn't strive to use the least characters as possible.
 It strived mostly to be the least programming work. This means it really is explosive.
 
 **Q:** This isn't possible!    
